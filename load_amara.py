@@ -1,19 +1,21 @@
 import csv
-from InitDB import initialize_database, insert_rows, get_list
+from DB import DB
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
 
 SHLOKAS_TABLE = "shlokas"
 INSERT_SH = f"INSERT INTO {SHLOKAS_TABLE} (sh_text_line1, sh_text_line2, sh_number) " + """VALUES ("{}", "{}", "{}");"""
 INSERT_W = """INSERT INTO words (w_word, w_artha, w_linga, w_synonyms, w_shloka_id) VALUES ("{}", "{}", "{}", "{}", {});"""
+DB_NAME = "amara.db"
 
 
 def load_amara():
-    initialize_database("InitDB.sql")
-    load_shlokas()
-    load_words()
+    db = DB(DB_NAME)
+    db.initialize_database("InitDB.sql")
+    load_shlokas(db)
+    load_words(db)
 
-def load_shlokas():
+def load_shlokas(db):
     with open("shlokas.csv", newline="") as csv_file:
         reader = csv.reader(csv_file, delimiter=",")
         rows = list(reader)
@@ -25,11 +27,11 @@ def load_shlokas():
             sh = INSERT_SH.format(new_sh_1, new_sh_2, row[1].lstrip().rstrip())
             shlokas.append(sh)
 
-        insert_rows(shlokas)
+        db.insert_rows(shlokas)
         
-def load_words():
+def load_words(db):
 
-    shlokas_lst = get_list(SHLOKAS_TABLE)
+    shlokas_lst = db.get_list(SHLOKAS_TABLE)
     shlokas = dict([(sh[3], sh[0]) for sh in shlokas_lst])
 
     syns = []
@@ -48,6 +50,6 @@ def load_words():
             row = INSERT_W.format(word, artha, words[i][1], syn, shlokas[words[i][2]])
             rows.append(row)
 
-        insert_rows(rows)
+        db.insert_rows(rows)
 
         
