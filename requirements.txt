@@ -1,2 +1,4 @@
 sqlite3
 indic_transliteration
+
+psycopg2-binary
